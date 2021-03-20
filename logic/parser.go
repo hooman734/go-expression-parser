@@ -90,7 +90,7 @@ func Evaluator(n Node) (float64, error) {
 	}
 }
 
-func infixEvaluator(leftN Node, rightN Node, op func(vl float64, vr float64) float64) (float64, error)  {
+func infixEvaluator(leftN Node, rightN Node, op func(vl float64, vr float64) float64) (float64, error) {
 	leftR, errL := Evaluator(leftN)
 	rightR, errR := Evaluator(rightN)
 	if errL != nil || errR != nil {
@@ -125,7 +125,13 @@ func infixParser(tokens [2]string, operator string) (Node, Node, error) {
 }
 
 func Parser(str string) (Node, error) {
-	operators := [5]int{'+', '-', '*', '/'}
+	const (
+		PLUS     = "+"
+		MINUS    = "-"
+		MULTIPLY = "*"
+		DIVIDE   = "/"
+	)
+	operators := [4]string{PLUS, MINUS, MULTIPLY, DIVIDE}
 
 	str = strings.TrimSpace(str)
 
@@ -135,7 +141,7 @@ func Parser(str string) (Node, error) {
 	}
 
 	for i := 0; i < len(operators); i++ {
-		operator := string(rune(operators[i]))
+		operator := operators[i]
 		if strings.Contains(str, operator) {
 			for _, result := range generateCombinations(str, operator) {
 				leftN, rightN, err := infixParser(result, operator)
@@ -144,13 +150,13 @@ func Parser(str string) (Node, error) {
 					continue
 				}
 
-				if operator == "+" {
+				if operator == PLUS {
 					return AddNode{Left: leftN, Right: rightN}, nil
-				} else if operator == "-" {
+				} else if operator == MINUS {
 					return SubtractNode{Left: leftN, Right: rightN}, nil
-				} else if operator == "*" {
+				} else if operator == MULTIPLY {
 					return MultiplyNode{Left: leftN, Right: rightN}, nil
-				} else if operator == "/" {
+				} else if operator == DIVIDE {
 					return DivideNode{Left: leftN, Right: rightN}, nil
 				}
 			}
