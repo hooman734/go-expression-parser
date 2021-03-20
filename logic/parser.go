@@ -70,6 +70,26 @@ func (receiver ExponentialNode) ToString() string {
 	return fmt.Sprintf(" (%s ^ %s) ", receiver.Left.ToString(), receiver.Right.ToString())
 }
 
+type ShiftLeftNode struct {
+	Node
+	Left  Node
+	Right Node
+}
+
+func (receiver ShiftLeftNode) ToString() string {
+	return fmt.Sprintf(" (%s << %s) ", receiver.Left.ToString(), receiver.Right.ToString())
+}
+
+type ShiftRightNode struct {
+	Node
+	Left  Node
+	Right Node
+}
+
+func (receiver ShiftRightNode) ToString() string {
+	return fmt.Sprintf(" (%s >> %s) ", receiver.Left.ToString(), receiver.Right.ToString())
+}
+
 func Evaluator(n Node) (float64, error) {
 	switch n.(type) {
 	case AtomicNode:
@@ -99,6 +119,16 @@ func Evaluator(n Node) (float64, error) {
 		exponentialNode := n.(ExponentialNode)
 		return infixEvaluator(exponentialNode.Left, exponentialNode.Right, func(vl float64, vr float64) float64 {
 			return math.Pow(vl, vr)
+		})
+	case ShiftLeftNode:
+		shiftLeftNode := n.(ShiftLeftNode)
+		return infixEvaluator(shiftLeftNode.Left, shiftLeftNode.Right, func(vl float64, vr float64) float64 {
+			return float64(int(vl) << int(vr))
+		})
+	case ShiftRightNode:
+		shiftRightNode := n.(ShiftRightNode)
+		return infixEvaluator(shiftRightNode.Left, shiftRightNode.Right, func(vl float64, vr float64) float64 {
+			return float64(int(vl) >> int(vr))
 		})
 	default:
 		err := fmt.Errorf("failed to evaluate node %s", n)
@@ -142,13 +172,15 @@ func infixParser(tokens [2]string, operator string) (Node, Node, error) {
 
 func Parser(str string) (Node, error) {
 	const (
-		PLUS     = "+"
-		MINUS    = "-"
-		MULTIPLY = "*"
-		DIVIDE   = "/"
-		EXPONENT = "^"
+		SHIFT_LEFT  = "<<"
+		SHIFT_RIGTH = ">>"
+		PLUS        = "+"
+		MINUS       = "-"
+		MULTIPLY    = "*"
+		DIVIDE      = "/"
+		EXPONENT    = "^"
 	)
-	operators := [5]string{PLUS, MINUS, MULTIPLY, DIVIDE, EXPONENT}
+	operators := [7]string{SHIFT_LEFT, SHIFT_RIGTH, PLUS, MINUS, MULTIPLY, DIVIDE, EXPONENT}
 
 	str = strings.TrimSpace(str)
 
@@ -167,17 +199,23 @@ func Parser(str string) (Node, error) {
 					continue
 				}
 
-				if operator == PLUS {
+				switch operator {
+				case SHIFT_LEFT:
+					return ShiftLeftNode{Left: leftN, Right: rightN}, nil
+				case SHIFT_RIGTH:
+					return ShiftRightNode{Left: leftN, Right: rightN}, nil
+				case PLUS:
 					return AddNode{Left: leftN, Right: rightN}, nil
-				} else if operator == MINUS {
+				case MINUS:
 					return SubtractNode{Left: leftN, Right: rightN}, nil
-				} else if operator == MULTIPLY {
+				case MULTIPLY:
 					return MultiplyNode{Left: leftN, Right: rightN}, nil
-				} else if operator == DIVIDE {
+				case DIVIDE:
 					return DivideNode{Left: leftN, Right: rightN}, nil
-				} else if operator == EXPONENT {
+				case EXPONENT:
 					return ExponentialNode{Left: leftN, Right: rightN}, nil
 				}
+
 			}
 		}
 	}

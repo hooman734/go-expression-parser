@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	n, parseError := Parser("2  ^ 3")
+	n, parseError := Parser("2 * +3 - 6 / 4 + 5 + 2 ^ 3 + 2 << 3")
 	if parseError != nil {
 		panic(parseError)
 	}
