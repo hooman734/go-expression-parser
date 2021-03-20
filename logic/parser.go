@@ -20,6 +20,7 @@ func (receiver AtomicNode) ToString() string {
 }
 
 type AddNode struct {
+	Node
 	Left  Node
 	Right Node
 }
@@ -29,6 +30,7 @@ func (receiver AddNode) ToString() string {
 }
 
 type SubtractNode struct {
+	Node
 	Left  Node
 	Right Node
 }
@@ -38,6 +40,7 @@ func (receiver SubtractNode) ToString() string {
 }
 
 type MultiplyNode struct {
+	Node
 	Left  Node
 	Right Node
 }
@@ -47,6 +50,7 @@ func (receiver MultiplyNode) ToString() string {
 }
 
 type DivideNode struct {
+	Node
 	Left  Node
 	Right Node
 }
