@@ -2,6 +2,7 @@ package logic
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -59,6 +60,16 @@ func (receiver DivideNode) ToString() string {
 	return fmt.Sprintf(" (%s / %s) ", receiver.Left.ToString(), receiver.Right.ToString())
 }
 
+type ExponentialNode struct {
+	Node
+	Left  Node
+	Right Node
+}
+
+func (receiver ExponentialNode) ToString() string {
+	return fmt.Sprintf(" (%s ^ %s) ", receiver.Left.ToString(), receiver.Right.ToString())
+}
+
 func Evaluator(n Node) (float64, error) {
 	switch n.(type) {
 	case AtomicNode:
@@ -83,6 +94,11 @@ func Evaluator(n Node) (float64, error) {
 		divideNode := n.(DivideNode)
 		return infixEvaluator(divideNode.Left, divideNode.Right, func(vl float64, vr float64) float64 {
 			return vl / vr
+		})
+	case ExponentialNode:
+		exponentialNode := n.(ExponentialNode)
+		return infixEvaluator(exponentialNode.Left, exponentialNode.Right, func(vl float64, vr float64) float64 {
+			return math.Pow(vl, vr)
 		})
 	default:
 		err := fmt.Errorf("failed to evaluate node %s", n)
@@ -130,8 +146,9 @@ func Parser(str string) (Node, error) {
 		MINUS    = "-"
 		MULTIPLY = "*"
 		DIVIDE   = "/"
+		EXPONENT = "^"
 	)
-	operators := [4]string{PLUS, MINUS, MULTIPLY, DIVIDE}
+	operators := [5]string{PLUS, MINUS, MULTIPLY, DIVIDE, EXPONENT}
 
 	str = strings.TrimSpace(str)
 
@@ -158,6 +175,8 @@ func Parser(str string) (Node, error) {
 					return MultiplyNode{Left: leftN, Right: rightN}, nil
 				} else if operator == DIVIDE {
 					return DivideNode{Left: leftN, Right: rightN}, nil
+				} else if operator == EXPONENT {
+					return ExponentialNode{Left: leftN, Right: rightN}, nil
 				}
 			}
 		}
