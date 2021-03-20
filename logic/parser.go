@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type Node interface{
+type Node interface {
 	ToString() string
 }
 
@@ -20,7 +20,6 @@ func (receiver AtomicNode) ToString() string {
 }
 
 type AddNode struct {
-	Node
 	Left  Node
 	Right Node
 }
@@ -30,7 +29,6 @@ func (receiver AddNode) ToString() string {
 }
 
 type SubtractNode struct {
-	Node
 	Left  Node
 	Right Node
 }
@@ -40,7 +38,6 @@ func (receiver SubtractNode) ToString() string {
 }
 
 type MultiplyNode struct {
-	Node
 	Left  Node
 	Right Node
 }
@@ -50,7 +47,6 @@ func (receiver MultiplyNode) ToString() string {
 }
 
 type DivideNode struct {
-	Node
 	Left  Node
 	Right Node
 }
@@ -110,55 +106,57 @@ func Evaluator(n Node) (float64, error) {
 	}
 }
 
+func combinations(str string, sep string) [][2]string {
+	result := strings.Split(str, sep)
+	combinations := make([][2]string, len(result)-1)
+
+	for i := 0; i < len(result)-1; i++ {
+		combinations[i] = [2]string{strings.Join(result[:i+1], sep), strings.Join(result[i+1:], sep)}
+	}
+
+	return combinations
+}
+
+func infix(tokens [2]string, operator string) (Node, Node, error) {
+	leftN, errL := Parser(tokens[0])
+	rightN, errR := Parser(tokens[1])
+
+	if errL != nil || errR != nil {
+		err := fmt.Errorf("unable to parse '%s'", strings.Join(tokens[:], operator))
+		return leftN, rightN, err
+	}
+
+	return leftN, rightN, nil
+}
+
 func Parser(str string) (Node, error) {
 	operators := [5]int{'+', '-', '*', '/'}
-
 	str = strings.TrimSpace(str)
 
 	if str == "" {
-		err := fmt.Errorf("unable to parse %s", str)
+		err := fmt.Errorf("unable to parse '%s'", str)
 		return nil, err
 	}
 
-	for _, operator := range operators {
-		if strings.Contains(str, string(rune(operator))) {
-			result := strings.SplitN(str, string(rune(operator)), 2)
-			if operator == '+' {
-				leftN, errL := Parser(result[0])
-				rightN, errR := Parser(result[1])
+	for i := 0; i < len(operators); i++ {
+		operator := string(rune(operators[i]))
+		if strings.Contains(str, operator) {
+			for _, result := range combinations(str, operator) {
+				leftN, rightN, err := infix(result, operator)
 
-				if errL != nil || errR != nil {
+				if err != nil {
 					continue
 				}
 
-				return AddNode{Left: leftN, Right: rightN}, nil
-			} else if operator == '-' {
-				leftN, errL := Parser(result[0])
-				rightN, errR := Parser(result[1])
-
-				if errL != nil || errR != nil {
-					continue
+				if operator == "+" {
+					return AddNode{Left: leftN, Right: rightN}, nil
+				} else if operator == "-" {
+					return SubtractNode{Left: leftN, Right: rightN}, nil
+				} else if operator == "*" {
+					return MultiplyNode{Left: leftN, Right: rightN}, nil
+				} else if operator == "/" {
+					return DivideNode{Left: leftN, Right: rightN}, nil
 				}
-
-				return SubtractNode{Left: leftN, Right: rightN}, nil
-			} else if operator == '*' {
-				leftN, errL := Parser(result[0])
-				rightN, errR := Parser(result[1])
-
-				if errL != nil || errR != nil {
-					continue
-				}
-
-				return MultiplyNode{Left: leftN, Right: rightN}, nil
-			} else if operator == '/' {
-				leftN, errL := Parser(result[0])
-				rightN, errR := Parser(result[1])
-
-				if errL != nil || errR != nil {
-					continue
-				}
-
-				return DivideNode{Left: leftN, Right: rightN}, nil
 			}
 		}
 	}
