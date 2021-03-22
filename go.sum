@@ -1,0 +1,5 @@
+github.com/ahl5esoft/golang-underscore v1.6.0 h1:ZDcD9lMqXoEKTMcJMeRyjMZ0ba8pzE4Ab8Q+fK4fBF4=
+github.com/ahl5esoft/golang-underscore v2.0.0+incompatible h1:uoDZDfVhxztzrcbMGatZjVsjJzDjDQz8lT4CFPaAxHM=
+github.com/ahl5esoft/golang-underscore v2.0.0+incompatible/go.mod h1:wzX7mL/afQ0rDhFm5FsyAGcPkBAfnXk7sa3Of6qQ4ac=
+github.com/amir734jj/go-lexer v0.1.2 h1:JbtRtIRqcjLZ4a5LSoIVWRFW1Auj7v6lNaUy77msQYE=
+github.com/amir734jj/go-lexer v0.1.2/go.mod h1:M6k0IOHA4EbDlfb/3lqNmdgzM/A5RCXTMRW5oG3sTrY=

@@ -1,10 +1,16 @@
-package logic
+package go_expression_parser
 
 import (
 	"fmt"
 	"math"
 	"strconv"
 	"strings"
+)
+
+import (
+	"fmt"
+	. "github.com/amir734jj/go-lexer"
+	underscore "github.com/ahl5esoft/golang-underscore"
 )
 
 type Node interface {
@@ -147,7 +153,7 @@ func infixEvaluator(leftN Node, rightN Node, op func(vl float64, vr float64) flo
 	}
 }
 
-func generateCombinations(str string, sep string) [][2]string {
+func generateCombinations(str []Token, sep string) [][2]string {
 	result := strings.Split(str, sep)
 	combinations := make([][2]string, len(result)-1)
 
@@ -170,29 +176,32 @@ func infixParser(tokens [2]string, operator string) (Node, Node, error) {
 	return leftN, rightN, nil
 }
 
-func Parser(str string) (Node, error) {
+func Parser(tokens []Token) (Node, error) {
 	const (
-		SHIFT_LEFT  = "<<"
-		SHIFT_RIGTH = ">>"
-		PLUS        = "+"
-		MINUS       = "-"
-		MULTIPLY    = "*"
-		DIVIDE      = "/"
-		EXPONENT    = "^"
+		ShiftLeft  = "<<"
+		ShiftRight = ">>"
+		PLUS       = "+"
+		MINUS      = "-"
+		MULTIPLY   = "*"
+		DIVIDE     = "/"
+		EXPONENT   = "^"
 	)
-	operators := [7]string{SHIFT_LEFT, SHIFT_RIGTH, PLUS, MINUS, MULTIPLY, DIVIDE, EXPONENT}
+	operators := [7]string{ShiftLeft, ShiftRight, PLUS, MINUS, MULTIPLY, DIVIDE, EXPONENT}
 
-	str = strings.TrimSpace(str)
+	if len(tokens) == 0 {
+		tokenValues := make([]string, 0)
+		underscore.Chain(tokens).Select(func(token Token, _ int) string {
+			return token.Name
+		}).Value(&tokenValues)
 
-	if str == "" {
-		err := fmt.Errorf("unable to parse '%s'", str)
+		err := fmt.Errorf("unable to parse '%s'", strings.Join(tokenValues, ", "))
 		return nil, err
 	}
 
 	for i := 0; i < len(operators); i++ {
 		operator := operators[i]
-		if strings.Contains(str, operator) {
-			for _, result := range generateCombinations(str, operator) {
+		if underscore.Chain(tokens).Any(func(token Token) bool { return token.Name == operator }) {
+			for _, result := range generateCombinations(tokens, operator) {
 				leftN, rightN, err := infixParser(result, operator)
 
 				if err != nil {
@@ -200,9 +209,9 @@ func Parser(str string) (Node, error) {
 				}
 
 				switch operator {
-				case SHIFT_LEFT:
+				case ShiftLeft:
 					return ShiftLeftNode{Left: leftN, Right: rightN}, nil
-				case SHIFT_RIGTH:
+				case ShiftRight:
 					return ShiftRightNode{Left: leftN, Right: rightN}, nil
 				case PLUS:
 					return AddNode{Left: leftN, Right: rightN}, nil
@@ -220,6 +229,6 @@ func Parser(str string) (Node, error) {
 		}
 	}
 
-	value, err := strconv.ParseFloat(str, 64)
+	value, err := strconv.ParseFloat(tokens, 64)
 	return AtomicNode{Value: value}, err
 }
